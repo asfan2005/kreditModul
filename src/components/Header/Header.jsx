@@ -14,8 +14,12 @@ import {
     FaLock,
     FaUserTie,
     FaEye,
-    FaEyeSlash
+    FaEyeSlash,
+    FaTools,
+    FaClock,
+    FaRocket
 } from 'react-icons/fa';
+import axios from 'axios';
 
 function Header() {
     const navigate = useNavigate();
@@ -27,6 +31,8 @@ function Header() {
         password: ''
     });
     const [showPassword, setShowPassword] = useState(false);
+    const [authMode, setAuthMode] = useState('login');
+    const [isStudentsModalOpen, setIsStudentsModalOpen] = useState(false);
 
     const toggleMenu = () => {
         setIsMenuOpen(!isMenuOpen);
@@ -52,37 +58,77 @@ function Header() {
         }));
     };
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         
         // Basic validation
-        if (!userType) {
-            alert('Foydalanuvchi turini tanlang');
-            return;
-        }
-        
-        if (!loginData.username || !loginData.password) {
-            alert('Login va parolni to\'ldiring');
+        if (!userType || !loginData.username || !loginData.password) {
+            alert('Iltimos, barcha maydonlarni to\'ldiring');
             return;
         }
 
-        // Log only username, password, and user type
-        console.log(`Username: ${loginData.username}, Password: ${loginData.password}, User Type: ${userType}`);
-
-        // Close modal and navigate
-        closeLoginModal();
+        // Convert userType to role number
+        let role;
         switch(userType) {
             case 'student':
-                navigate('/student-dashboard');
+                role = '1';
                 break;
             case 'lecturer':
-                navigate('/lecturer-dashboard');
+                role = '2';
                 break;
             case 'manager':
-                navigate('/manager-dashboard');
+                role = '3';
                 break;
             default:
-                break;
+                alert('Noma\'lum foydalanuvchi turi');
+                return;
+        }
+
+        // Prepare form data
+        const formData = new URLSearchParams();
+        formData.append('login', loginData.username);
+        formData.append('parol', loginData.password);
+        formData.append('rol', role);
+        formData.append('ans_id', '252');
+        formData.append('avtorizatsiya', '1');
+        formData.append('javob', '2');
+        try {
+            console.log('Sending request to server...');
+            const response = await axios.post('https://kredit-modul.uz/index2.asp', formData, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            });
+
+            console.log('Server Response:', response.data);
+
+            if (response.data) {
+                console.log('Login successful, redirecting...');
+                // Reset form
+                setLoginData({ username: '', password: '' });
+                setUserType('');
+                closeLoginModal();
+
+                // Redirect based on role
+                switch (role) {
+                    case '3':
+                        window.location.href = 'https://kredit-modul.uz/lms_menjer.asp';
+                        break;
+                    case '2':
+                        window.location.href = 'https://kredit-modul.uz/lms.asp';
+                        break;
+                    case '1':
+                        window.location.href = 'https://kredit-modul.uz/lms_tinglovchi.asp';
+                        break;
+                }
+            }
+        } catch (error) {
+            console.error('Login error details:', {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status
+            });
+            alert('Tizimga kirishda xatolik yuz berdi. Iltimos qaytadan urinib ko\'ring.');
         }
     };
 
@@ -135,6 +181,15 @@ function Header() {
         });
     };
 
+    const handleStudentsClick = (e) => {
+        e.preventDefault();
+        setIsStudentsModalOpen(true);
+    };
+
+    const closeStudentsModal = () => {
+        setIsStudentsModalOpen(false);
+    };
+
     const menuItems = [
         { 
             to: "/", 
@@ -163,7 +218,11 @@ function Header() {
             label: "Yangiliklar",
             onClick: handleNewsClick
         },
-        { to: "/students", icon: <FaUserGraduate />, label: "Talabalar" }
+        { 
+            icon: <FaUserGraduate />, 
+            label: "Talabalar",
+            onClick: handleStudentsClick 
+        }
     ];
 
     const userTypes = [
@@ -364,12 +423,58 @@ function Header() {
 
                             {/* Registration Link */}
                             <div className="text-center mt-4">
-                                <span className="text-gray-600">Hisobingiz yo'qmi? </span>
-                                <a href="#" className="text-blue-600 font-bold hover:underline">
+                                <span  className="text-gray-600">Hisobingiz yo'qmi? </span>
+                                <a onClick={() => window.location.href = 'https://kredit-modul.uz/register2.asp'} href="#" className="text-blue-600 font-bold hover:underline">
                                     Ro'yxatdan o'ting
                                 </a>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Students Coming Soon Modal */}
+            {isStudentsModalOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 relative">
+                        <button 
+                            onClick={closeStudentsModal} 
+                            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                        >
+                            <FaTimes className="text-2xl" />
+                        </button>
+
+                        <div className="text-center space-y-6">
+                            <div className="flex justify-center space-x-4 text-4xl text-blue-600 animate-bounce">
+                                <FaTools className="transform rotate-12" />
+                                <FaClock className="animate-pulse" />
+                                <FaRocket className="transform -rotate-45" />
+                            </div>
+                            
+                            <h2 className="text-3xl font-bold text-blue-800">
+                                Tez kunda!
+                            </h2>
+                            
+                            <div className="space-y-4 text-gray-600">
+                                <p className="text-lg">
+                                    Talabalar bo'limi ustida ish olib borilmoqda
+                                </p>
+                                <p className="text-sm">
+                                    Yangi imkoniyatlar va qulayliklar bilan tez orada ishga tushadi
+                                </p>
+                            </div>
+
+                            <div className="mt-8">
+                                <button
+                                    onClick={closeStudentsModal}
+                                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 
+                                             text-white font-bold rounded-xl hover:from-blue-700 hover:to-indigo-700
+                                             transition-all duration-300 transform hover:scale-105"
+                                >
+                                    Tushundim
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

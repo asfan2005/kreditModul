@@ -7,6 +7,8 @@ function Kurslar() {
   const [activeFilter, setActiveFilter] = useState('all')
   const [showAllCourses, setShowAllCourses] = useState(false)
   const [showFreeCourses, setShowFreeCourses] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedCourse, setSelectedCourse] = useState(null)
 
   const courses = [
     {
@@ -209,6 +211,17 @@ function Kurslar() {
     );
   }
 
+  // Add new function to handle enrollment
+  const handleEnrollment = (course) => {
+    setSelectedCourse(course)
+    setIsModalOpen(true)
+    // Modal will automatically close after 3 seconds
+    setTimeout(() => {
+      setIsModalOpen(false)
+      setSelectedCourse(null)
+    }, 3000)
+  }
+
   return (
     <div className="bg-gradient-to-b from-gray-50 to-white min-h-screen py-16">
       <div className="container mx-auto px-4">
@@ -355,7 +368,10 @@ function Kurslar() {
                   </div>
                 </div>
 
-                <button className="mt-6 w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center justify-center space-x-2">
+                <button 
+                  onClick={() => handleEnrollment(course)}
+                  className="mt-6 w-full bg-gradient-to-r from-blue-600 to-blue-700 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center justify-center space-x-2"
+                >
                   <span>Kursga yozilish</span>
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -375,6 +391,38 @@ function Kurslar() {
           </div>
         )}
       </div>
+
+      {/* Add Modal */}
+      {isModalOpen && selectedCourse && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black opacity-50"></div>
+          <div className="relative bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform animate-fadeIn">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Tabriklaymiz! 🎉</h3>
+              <p className="text-lg text-gray-600 mb-4">
+                <span className="font-semibold">{selectedCourse.title}</span> kursiga arizangiz muvaffaqiyatli qabul qilindi
+              </p>
+              <div className="bg-blue-50 p-4 rounded-lg mb-4">
+                <p className="text-sm text-blue-700">
+                  Adminlarimiz 24 soat ichida siz bilan bog'lanishadi. 
+                  Iltimos, telefoningizni yoqilgan holda saqlang!
+                </p>
+              </div>
+              <div className="flex items-center justify-center space-x-2 text-sm text-gray-500">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>Modal avtomatik ravishda yopiladi</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 const newsData = [
   {
@@ -78,6 +79,8 @@ const newsData = [
 
 function New() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [selectedNews, setSelectedNews] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -93,7 +96,16 @@ function New() {
   };
 
   const handleReadMore = (newsId) => {
-    navigate(`/news/${newsId}`);
+    const news = newsData.find((item) => item.id === newsId);
+    setSelectedNews(news);
+    setIsModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedNews(null);
+    document.body.style.overflow = 'unset';
   };
 
   return (
@@ -205,6 +217,127 @@ function New() {
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isModalOpen && selectedNews && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-black bg-opacity-75"
+            onClick={closeModal}
+          >
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="relative w-full max-w-4xl bg-white rounded-2xl overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={closeModal}
+                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/80 hover:bg-white transition-colors"
+              >
+                <svg
+                  className="w-6 h-6 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+
+              <div className="flex flex-col md:flex-row">
+                <div className="md:w-1/2">
+                  <img
+                    src={selectedNews.image}
+                    alt={selectedNews.title}
+                    className="w-full h-64 md:h-full object-cover"
+                  />
+                </div>
+
+                <div className="md:w-1/2 p-6 md:p-8">
+                  <div className="flex flex-wrap gap-3 mb-4">
+                    <span className="px-4 py-1.5 bg-blue-500 text-white rounded-full text-sm font-medium">
+                      {selectedNews.category}
+                    </span>
+                    <span className="px-4 py-1.5 bg-gray-100 text-gray-700 rounded-full text-sm">
+                      {selectedNews.date}
+                    </span>
+                  </div>
+
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-4">
+                    {selectedNews.title}
+                  </h2>
+
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    {selectedNews.description}
+                  </p>
+
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                      <svg
+                        className="w-6 h-6 text-gray-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">Muallif</p>
+                      <p className="font-medium text-gray-800">
+                        {selectedNews.author}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => navigate(`/news/${selectedNews.id}`)}
+                      className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      <span>To'liq o'qish</span>
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M14 5l7 7m0 0l-7 7m7-7H3"
+                        />
+                      </svg>
+                    </button>
+                    <button
+                      onClick={closeModal}
+                      className="px-6 py-3 border border-gray-300 hover:border-gray-400 text-gray-700 rounded-lg transition-colors"
+                    >
+                      Yopish
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

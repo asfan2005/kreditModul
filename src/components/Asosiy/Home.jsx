@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaGraduationCap, FaChartLine, FaUsers, FaClipboardCheck } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 function Asosiy() {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showModal, setShowModal] = useState(false);
   const slides = [
     {
       icon: (
@@ -84,6 +85,47 @@ function Asosiy() {
     return () => clearInterval(timer);
   }, []);
 
+  const ComingSoonModal = ({ onClose }) => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.8, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.8, y: 20 }}
+        className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-md mx-4"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="text-center">
+          <div className="mb-4 relative">
+            <div className="w-20 h-20 mx-auto bg-blue-500/10 rounded-full flex items-center justify-center">
+              <svg className="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </div>
+            <div className="absolute -top-2 -right-2 w-4 h-4 bg-blue-200 rounded-full animate-ping" />
+          </div>
+          <h3 className="text-2xl font-bold mb-2 text-gray-800 dark:text-white">
+            Tez kunda ishga tushadi!
+          </h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Ushbu bo'lim ustida ishlar olib borilmoqda. Yangiliklar va qiziqarli ma'lumotlar bilan tez orada uchrashguncha kuting!
+          </p>
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+          >
+            Tushundim
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+
   return (
     <div 
       className="relative w-full h-screen sm:h-[600px] md:h-[650px] lg:h-[700px] overflow-hidden bg-fixed" 
@@ -126,7 +168,7 @@ function Asosiy() {
               {slides[currentSlide].description}
             </p>
             <button 
-              onClick={() => navigate(slides[currentSlide].route)}
+              onClick={() => setShowModal(true)}
               className="relative px-10 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full font-semibold 
                 hover:scale-105 transform transition duration-300 shadow-xl group overflow-hidden"
             >
@@ -160,6 +202,10 @@ function Asosiy() {
           ))}
         </div>
       </motion.div>
+      
+      <AnimatePresence>
+        {showModal && <ComingSoonModal onClose={() => setShowModal(false)} />}
+      </AnimatePresence>
     </div>
   );
 }
